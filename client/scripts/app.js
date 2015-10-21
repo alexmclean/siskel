@@ -13,18 +13,32 @@ var Movie = Backbone.Model.extend({
 var Movies = Backbone.Collection.extend({
 
   model: Movie,
+  field: 'title',
+  ascending: true,
 
   initialize: function() {
     this.on('change', this.sort, this);
   },
 
-  comparator: 'title',
+  comparator: function(movie1, movie2){
+    return movie1.attributes['title'] > movie2.attributes['title'];
+  },
 
   sortByField: function(field) {
-    this.comparator = field;
-    //console.log("changing comparator");
+    if(field === this.field && !this.ascending){
+      this.comparator = function(movie1, movie2){
+        return movie1.attributes[field] > movie2.attributes[field];
+      };
+    } else {
+      this.comparator = function(movie1, movie2){
+        return movie1.attributes[field] < movie2.attributes[field];
+      };
+      //console.log("changing comparator");  
+    }
+    this.ascending = !this.ascending; 
+    this.field = field;
     this.sort();
-  } 
+  }
 
 });
 
@@ -84,7 +98,7 @@ var MoviesView = Backbone.View.extend({
 
   initialize: function() {
     // your code here
-    this.collection.on('sort', this.render(), this);
+    this.collection.on('sort', this.render, this);
   },
 
   render: function() {
